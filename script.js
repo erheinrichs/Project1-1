@@ -1,52 +1,31 @@
-var map = L.map('mapid').setView([43.07, -89.4], 10);
+var map = L.map('map').setView([37.0902, -95.7129], 3);
 
- L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/watercolor/{z}/{x}/{y}.{ext}', {
-	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  // load a tile layer
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
 	subdomains: 'abcd',
-	minZoom: 1,
-	maxZoom: 16,
-	ext: 'jpg'
+	maxZoom: 20
 }).addTo(map);
 
-var marker = L.marker([43.0747, -89.38]).addTo(map);
-var marker2 = L.marker([43.076, -89.4]).addTo(map);
-var circle = L.circle([43.0747, -89.38], {
-    color: 'blue',
-    fillColor: '#f04',
-    fillOpacity: 0.5,
-    radius: 1000
-}).addTo(map);
-
-var polygon = L.polygon([
-    [43.07, -89.38],
-    [43.1, -89.38],
-    [43.2, -89.7],
-]).addTo(map);
-
-marker.bindPopup("<b>Hello world!</b><br>I am the Capitol building of Madison, WI.").openPopup();
-marker2.bindPopup("<b> Hello again world!</b><br>I am the Memorial Union Terrace")
-circle.bindPopup("I am a circle.");
-polygon.bindPopup("I am a random triangle.");
-
-var popup = L.popup()
-    .setLatLng([42.9, -89.5])
-    .setContent("I am a standalone popup.")
-    .openOn(map);
-
-function onMapClick(e) {
-    alert("You clicked the map at " + e.latlng);
-}
-
-map.on('click', onMapClick);
+  // load GeoJSON from an external file
+$.getJSON("https://raw.githubusercontent.com/erheinrichs/StateBoundaries/main/places.geojson",function(data){
+    // add GeoJSON layer to the map once the file is loaded
+    L.geoJson(data).addTo(map);
+  });
 
 
-var popup = L.popup();
-
-function onMapClick(e) {
-    popup
-        .setLatLng(e.latlng)
-        .setContent("You clicked the map at " + e.latlng.toString())
-        .openOn(map);
-}
-
-map.on('click', onMapClick);
+ $.getJSON("https://raw.githubusercontent.com/erheinrichs/SchoolRankings/main/places.geojson",function(data){
+   var ratIcon = L.icon({
+    iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/f/f1/Ski_trail_rating_symbol_red_circle.png',
+    iconSize: [20,20]
+  }); 
+  L.geoJson(data  ,{
+    pointToLayer: function(feature,latlng){
+	 var marker = L.marker(latlng,{icon: ratIcon});
+      marker.bindPopup(feature.properties.State + '<br/>' + feature.properties.["K-12 Achievement Score"] + '<br/>' + feature.properties.["School Ranking"]);
+        return marker;
+      
+     
+    }
+  }  ).addTo(map);
+});
